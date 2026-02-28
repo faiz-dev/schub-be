@@ -1,0 +1,32 @@
+﻿[1m[31mERROR[39m[22m in [1m./apps/gateway-service/src/main.ts[39m[22m
+[1mModule build [1m[31mfailed[39m[22m[1m (from ./node_modules/ts-loader/index.js):
+[1m[31mError[39m[22m[1m: Cannot find module 'webpack'
+Require stack:
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\ts-loader\dist\instances.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\ts-loader\dist\index.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\ts-loader\index.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\loader-runner\lib\loadLoader.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\loader-runner\lib\LoaderRunner.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\node_modules\webpack\lib\NormalModuleFactory.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\node_modules\webpack\lib\Compiler.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\node_modules\webpack\lib\webpack.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\node_modules\webpack\lib\index.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\lib\compiler\defaults\webpack-defaults.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\lib\compiler\webpack-compiler.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\actions\build.action.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\actions\index.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\commands\command.loader.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\commands\index.js
+- C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\@nestjs\cli\bin\nest.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.require (node:internal/modules/cjs/loader:1463:12)
+    at require (node:internal/modules/helpers:147:16)
+    at Object.<anonymous> (C:\Users\Al\Documents\Projects\Solution Based\School Hub\schub-be\node_modules\ts-loader\dist\instances.js:16:17)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)[39m[22m
+
+webpack 5.104.1 compiled with [1m[31m1 error[39m[22m in 185 ms

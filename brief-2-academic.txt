@@ -1,0 +1,33 @@
+Additional Brief: Academic Module (The School Engine)
+1. Core Responsibility
+Modul ini bertanggung jawab atas seluruh struktur organisasi sekolah dan "Peran Akademik" user. Modul ini tidak mengurusi login/akun, melainkan mengurusi di mana posisi seorang user (Siswa/Guru) dalam kurikulum dan tahun ajaran yang aktif.
+
+2. Key Entities (Database Schema)
+AcademicYear: Mengelola periode pendidikan (Contoh: "2025/2026 Ganjil"). Memiliki flag is_active.
+
+Department: Daftar Jurusan di SMK (Contoh: PPLG, TKKT, Otomotif).
+
+Class: Entitas kelas yang berdiri sendiri (Contoh: XII PPLG 1).
+
+Enrollment: Tabel perantara (junction) yang menghubungkan UserID (dari Identity) ke ClassID dan AcademicYearID. Ini adalah kunci untuk fitur kenaikan kelas.
+
+Subject: Daftar mata pelajaran.
+
+TeachingAssignment: Plotting Guru ke Mata Pelajaran di Kelas tertentu pada Tahun Ajaran tertentu.
+
+3. Key Logic & Business Rules
+Current Status: Kemampuan untuk menentukan posisi akademik user saat ini berdasarkan Tahun Ajaran yang sedang is_active.
+
+Academic History: Menyimpan jejak rekam siswa (tahun lalu kelas apa, tahun sekarang kelas apa).
+
+Promotion Logic: Mekanisme untuk memindahkan sekelompok siswa ke kelas baru di tahun ajaran baru tanpa mengubah data identitas dasar mereka.
+
+Status Management: Mengelola status akademik seperti 'Aktif', 'Magang/PKL', 'Lulus', atau 'Mutasi'.
+
+4. Integration Point with Identity Module
+Dependency: Academic Module menggunakan UserID (UUID) dari Identity Module sebagai referensi utama.
+
+Data Aggregation: Saat request profil lengkap, Academic Module menyediakan informasi Kelas, Jurusan, dan Wali Kelas untuk digabungkan dengan data Nama dan Foto dari Identity Module.
+
+5. Instruksi Pengembangan untuk Antigravity
+"Tolong buatkan Academic Module di dalam apps/academic-service. Fokus pada pembuatan Entity yang saling berelasi: AcademicYear, Department, Class, dan Enrollment. Pastikan tabel Enrollment menggunakan relasi studentId yang merujuk pada UserId di Identity Service. Implementasikan logika agar sistem bisa menarik data 'Kelas Siswa' berdasarkan Tahun Ajaran yang sedang aktif."

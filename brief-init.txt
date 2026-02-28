@@ -1,0 +1,38 @@
+1. Deskripsi Proyek
+SchoolHub adalah ekosistem digital untuk sekolah menengah kejuruan (SMK) yang berfungsi sebagai Single Identity. Fokus utamanya adalah kartu identitas digital yang terintegrasi dengan berbagai layanan sekolah (Brankas Dokumen, Presensi, dan Peminjaman Alat).
+
+2. Tech Stack & Arsitektur
+Backend: Node.js dengan framework NestJS.
+
+Backend Pattern: Modular Monolith dalam struktur Monorepo.
+
+Frontend Siswa: Native Android menggunakan Kotlin dan Jetpack Compose.
+
+Admin Dashboard: Kotlin/JS (Compose HTML/React Wrapper).
+
+Database: PostgreSQL.
+
+Autentikasi: Hybrid (Email/Password Manual & Google Workspace SSO @sekolah.sch.id).
+
+UI/UX Style: Clean Material 3, warna dominan Biru Teknologi & Abu-abu Profesional.
+
+3. Struktur Workspace (Monorepo NestJS)
+Sistem backend dibagi menjadi beberapa layanan di dalam satu folder apps/:
+
+gateway-service: Entry point tunggal, pengatur routing, dan keamanan (Reverse Proxy).
+
+identity-service: Mengelola Auth (SSO), data profil siswa/guru, dan peran (RBAC).
+
+vault-service: Mengelola penyimpanan dokumen terenkripsi (Ijazah, Akta, dll).
+
+libs/common: Tempat berbagi DTO, skema database, dan utilitas antar service.
+
+4. Core Features (Initial Phase)
+Dynamic Digital ID Card: Kartu pelajar dengan informasi personal menonjol (Nama, Kelas, Status) dan QR Code dinamis (TOTP) yang bisa diperbesar saat diketuk.
+
+Identity Vault: Layanan khusus di navigasi utama untuk menyimpan scan dokumen penting secara aman.
+
+Role-Based Access Control (RBAC): Perbedaan hak akses antara Siswa, Guru, dan Operator (Admin).
+
+5. Instruksi Pengembangan untuk Antigravity
+"Tolong bantu saya menginisialisasi workspace SchoolHub dengan struktur NestJS Monorepo. Mulailah dengan membuat folder apps/ yang berisi gateway-service dan identity-service. Fokus pertama kita adalah membangun Identity Service yang mendukung login Google Workspace SSO dan skema database PostgreSQL untuk tabel users dan profiles. Pastikan kodingan menggunakan prinsip Clean Architecture dan Material 3 design patterns untuk sisi frontend nantinya."

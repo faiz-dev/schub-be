@@ -1,0 +1,12 @@
+Technical Standards & Patterns
+Global Interceptor: Implementasikan TransformInterceptor di libs/common untuk membungkus semua respons sukses dalam format { success: true, message: string, data: any }.
+
+Global Exception Filter: Implementasikan HttpExceptionFilter untuk standarisasi error dengan label error yang unik (contoh: AUTH_UNAUTHORIZED, DATA_NOT_FOUND).
+
+SOLID Principles: * Pisahkan logika bisnis sepenuhnya ke dalam Service.
+
+Gunakan Data Transfer Objects (DTO) untuk setiap input/output data.
+
+Gunakan Dependency Injection untuk menjaga modularitas.
+
+Validation: Gunakan ValidationPipe secara global dengan whitelist: true untuk memastikan hanya data yang didefinisikan di DTO yang masuk ke sistem.

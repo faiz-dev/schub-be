@@ -1,0 +1,205 @@
+# SchoolHub Backend Initialization
+
+Initialize the NestJS monorepo workspace for SchoolHub — a digital identity ecosystem for vocational schools (SMK). Two briefs define the initial scope:
+
+1. **Identity Service** — Google Workspace SSO login, email/password auth, RBAC, PostgreSQL schema for `users` and `profiles`.
+2. **Academic Service** — School organizational structure: academic years, departments, classes, student enrollments, subjects, and teaching assignments.
+3. **Gateway Service** — Single entry-point reverse proxy routing to both services.
+
+## Current State
+
+| Item | Status |
+|---|---|
+| Monorepo scaffold | ✅ Already created ([nest-cli.json](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/nest-cli.json) has `gateway-service`, `identity-service`, `libs/common`) |
+| `stui-be` app | ⚠️ Leftover from initial `nest new` — unrelated to SchoolHub, should be removed |
+| Database / TypeORM | ❌ Not installed or configured |
+| Auth (Passport / Google SSO) | ❌ Not installed or configured |
+| Academic Service | ❌ Does not exist yet |
+| Entities & DTOs | ❌ None exist |
+| Environment config | ❌ None |
+
+## Proposed Changes
+
+### 1. Cleanup
+
+#### [DELETE] [stui-be](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/stui-be)
+Remove the leftover `stui-be` app and its references from `nest-cli.json` and `package.json`.
+
+---
+
+### 2. Dependencies (root `package.json`)
+
+Install the following packages:
+
+| Package | Purpose |
+|---|---|
+| `@nestjs/typeorm`, `typeorm`, `pg` | PostgreSQL via TypeORM |
+| `@nestjs/config` | Environment variables (`.env`) |
+| `@nestjs/passport`, `passport`, `passport-google-oauth20` | Google Workspace SSO |
+| `@nestjs/jwt`, `passport-jwt` | JWT access/refresh tokens |
+| `bcrypt` | Password hashing (for hybrid email/password auth) |
+| `class-validator`, `class-transformer` | DTO validation |
+| `@nestjs/swagger` | API documentation |
+| `uuid` / `crypto` | TOTP-ready dynamic QR code support |
+| `@nestjs/axios`, `axios` | HTTP client for gateway proxy & inter-service calls |
+| `@types/passport-google-oauth20`, `@types/passport-jwt`, `@types/bcrypt` | Dev types |
+
+---
+
+### 3. `libs/common` — Shared Library
+
+#### [NEW] [database.module.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/database/database.module.ts)
+Shared `TypeOrmModule.forRootAsync()` config reading from `ConfigService`.
+
+#### [NEW] [transform.interceptor.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/interceptors/transform.interceptor.ts)
+Global interceptor wrapping all success responses in `{ success: true, message: string, data: any }`.
+
+#### [NEW] [http-exception.filter.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/filters/http-exception.filter.ts)
+Global exception filter standardizing errors with `{ success: false, error: string, message: string, statusCode: number }`. Uses unique error labels (e.g. `AUTH_UNAUTHORIZED`, `DATA_NOT_FOUND`).
+
+#### [NEW] [error-labels.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/constants/error-labels.ts)
+Centralized error label constants used by the exception filter and services.
+
+#### [NEW] [user.entity.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/entities/user.entity.ts)
+`User` entity: `id` (UUID), `email`, `passwordHash?`, `googleId?`, `role` (enum: STUDENT, TEACHER, OPERATOR), `isActive`, timestamps.
+
+#### [NEW] [profile.entity.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/entities/profile.entity.ts)
+`Profile` entity: `id` (UUID), one-to-one → `User`, `fullName`, `nisn?`, `nip?`, `photoUrl?`, `phone?`, `address?`, timestamps.
+
+#### [NEW] [academic-year.entity.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/entities/academic-year.entity.ts)
+`AcademicYear`: `id`, `name` (e.g. "2025/2026 Ganjil"), `startDate`, `endDate`, `isActive` (boolean flag), timestamps.
+
+#### [NEW] [department.entity.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/entities/department.entity.ts)
+`Department`: `id`, `name` (e.g. "PPLG"), `description?`, timestamps.
+
+#### [NEW] [class.entity.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/entities/class.entity.ts)
+`Class`: `id`, `name` (e.g. "XII PPLG 1"), many-to-one → `Department`, timestamps.
+
+#### [NEW] [enrollment.entity.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/entities/enrollment.entity.ts)
+`Enrollment` (junction table): `id`, many-to-one → `User` (studentId), many-to-one → `Class`, many-to-one → `AcademicYear`, `status` (enum: ACTIVE, INTERNSHIP, GRADUATED, TRANSFERRED), timestamps.
+
+#### [NEW] [subject.entity.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/entities/subject.entity.ts)
+`Subject`: `id`, `name`, `code?`, timestamps.
+
+#### [NEW] [teaching-assignment.entity.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/entities/teaching-assignment.entity.ts)
+`TeachingAssignment`: `id`, many-to-one → `User` (teacherId), many-to-one → `Subject`, many-to-one → `Class`, many-to-one → `AcademicYear`, timestamps.
+
+#### [NEW] [role.enum.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/enums/role.enum.ts)
+`UserRole` enum: `STUDENT`, `TEACHER`, `OPERATOR`.
+
+#### [NEW] [enrollment-status.enum.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/enums/enrollment-status.enum.ts)
+`EnrollmentStatus` enum: `ACTIVE`, `INTERNSHIP`, `GRADUATED`, `TRANSFERRED`.
+
+#### [NEW] [dto/](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/dto/)
+Shared DTOs: `CreateUserDto`, `LoginDto`, `UserResponseDto`, `ProfileDto`.
+
+#### [MODIFY] [index.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/libs/common/src/index.ts)
+Re-export all new modules, entities, enums, and DTOs.
+
+---
+
+### 4. `identity-service` — Auth & User Management
+
+#### [MODIFY] [main.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/identity-service/src/main.ts)
+Port `3001`. Apply global `ValidationPipe({ whitelist: true })`, `TransformInterceptor`, `HttpExceptionFilter`, and Swagger.
+
+#### [MODIFY] [identity-service.module.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/identity-service/src/identity-service.module.ts)
+Import `ConfigModule`, `DatabaseModule`, `TypeOrmModule.forFeature([User, Profile])`, `PassportModule`, `JwtModule`, auth sub-modules.
+
+#### [NEW] [auth/](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/identity-service/src/auth/)
+- `auth.module.ts` — wires Passport strategies, JWT, and the auth service.
+- `auth.controller.ts` — endpoints: `POST /auth/login` (email/password), `GET /auth/google` (SSO redirect), `GET /auth/google/callback`, `POST /auth/refresh`.
+- `auth.service.ts` — validates credentials, issues JWT (access + refresh), handles Google profile upsert.
+- `strategies/google.strategy.ts` — Passport Google OAuth2 strategy scoped to `@sekolah.sch.id` hosted domain.
+- `strategies/jwt.strategy.ts` — Passport JWT strategy for route guarding.
+- `guards/roles.guard.ts` — RBAC guard using `@Roles()` decorator.
+- `decorators/roles.decorator.ts` — `@Roles(UserRole.STUDENT, ...)` custom decorator.
+
+#### [NEW] [users/](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/identity-service/src/users/)
+- `users.module.ts`, `users.controller.ts`, `users.service.ts` — CRUD for users & profiles (admin-only write, self-read).
+
+---
+
+### 5. `academic-service` — School Structure & Enrollments
+
+#### [NEW] [main.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/academic-service/src/main.ts)
+Port `3002`. Apply global `ValidationPipe({ whitelist: true })`, `TransformInterceptor`, `HttpExceptionFilter`, and Swagger.
+
+#### [NEW] [academic-service.module.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/academic-service/src/academic-service.module.ts)
+Import `ConfigModule`, `DatabaseModule`, `TypeOrmModule.forFeature([AcademicYear, Department, Class, Enrollment, Subject, TeachingAssignment])`.
+
+#### [NEW] [academic-year/](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/academic-service/src/academic-year/)
+- CRUD for academic years. Only one year may be `isActive` at a time (enforced in service logic).
+
+#### [NEW] [department/](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/academic-service/src/department/)
+- CRUD for departments (jurusan).
+
+#### [NEW] [class/](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/academic-service/src/class/)
+- CRUD for classes. Each class belongs to a department.
+
+#### [NEW] [enrollment/](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/academic-service/src/enrollment/)
+- Enroll students into classes for a given academic year.
+- `GET /enrollments/current?studentId=` — returns current class based on active academic year.
+- `GET /enrollments/history?studentId=` — returns academic history across years.
+- **Promotion logic** — bulk-move students to new classes in a new academic year.
+- **Status management** — update enrollment status (Active → Internship → Graduated, etc.).
+
+#### [NEW] [subject/](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/academic-service/src/subject/)
+- CRUD for subjects (mata pelajaran).
+
+#### [NEW] [teaching-assignment/](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/academic-service/src/teaching-assignment/)
+- Assign teachers to subjects in specific classes per academic year.
+
+---
+
+### 6. `gateway-service` — Reverse Proxy Entry Point
+
+#### [MODIFY] [main.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/gateway-service/src/main.ts)
+Port `3000`, CORS, global prefix `/api`. Apply global `ValidationPipe({ whitelist: true })`, `TransformInterceptor`, `HttpExceptionFilter`.
+
+#### [MODIFY] [gateway-service.module.ts](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/gateway-service/src/gateway-service.module.ts)
+Import `ConfigModule`, set up `HttpModule` for proxying requests to `identity-service` (`:3001`) and `academic-service` (`:3002`).
+
+#### [NEW] [proxy/](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/apps/gateway-service/src/proxy/)
+- `proxy.module.ts`, `proxy.controller.ts`, `proxy.service.ts` — forward:
+  - `/api/auth/**`, `/api/users/**` → `identity-service`
+  - `/api/academic/**` → `academic-service`
+
+---
+
+### 7. Environment & Config
+
+#### [NEW] [.env.example](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/.env.example)
+Template with all required vars: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `IDENTITY_SERVICE_PORT`, `ACADEMIC_SERVICE_PORT`, `GATEWAY_PORT`.
+
+#### [NEW] [.env](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/.env)
+Development defaults (localhost PostgreSQL, placeholder Google creds, ports 3000/3001/3002).
+
+---
+
+### 8. Monorepo Config Updates
+
+#### [MODIFY] [nest-cli.json](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/nest-cli.json)
+Remove `stui-be`, add `academic-service`, update `root`/`sourceRoot` to `gateway-service`.
+
+#### [MODIFY] [package.json](file:///c:/Users/Al/Documents/Projects/Solution%20Based/School%20Hub/schub-be/package.json)
+- Rename project from `stui-be` to `schub-be`.
+- Update scripts: `start:gateway`, `start:identity`, `start:academic`, `start:dev:gateway`, `start:dev:identity`, `start:dev:academic`.
+- Remove `stui-be`-specific scripts.
+
+---
+
+## Verification Plan
+
+### Automated
+1. **Build check** — `npx nest build gateway-service`, `npx nest build identity-service`, and `npx nest build academic-service` must compile without errors.
+2. **Lint check** — `npm run lint` passes.
+
+### Manual (requires your input)
+1. **Database** — Running PostgreSQL instance needed. Start all services and verify TypeORM auto-syncs all tables (`users`, `profiles`, `academic_years`, `departments`, `classes`, `enrollments`, `subjects`, `teaching_assignments`).
+2. **Google SSO** — Requires real Google Cloud OAuth2 client ID for `@sekolah.sch.id`.
+3. **Auth flow** — Test `POST /api/auth/register` + `POST /api/auth/login` once DB is running.
+4. **Academic flow** — Create academic year → department → class → enroll student → query current enrollment.
+
+> [!IMPORTANT]
+> I'll focus on making everything **compile and structurally correct** first. Live testing depends on your PostgreSQL and Google Cloud setup.
