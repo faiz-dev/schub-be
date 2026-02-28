@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from '@app/common';
+import { DatabaseModule, CommonAuthModule } from '@app/common';
 import { AcademicYearModule } from './academic-year/academic-year.module';
 import { DepartmentModule } from './department/department.module';
 import { ClassModule } from './class/class.module';
@@ -12,6 +12,7 @@ import { TeachingAssignmentModule } from './teaching-assignment/teaching-assignm
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
+    CommonAuthModule,
     AcademicYearModule,
     DepartmentModule,
     ClassModule,

@@ -10,9 +10,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto } from '@app/common';
+import { LoginDto, JwtAuthGuard } from '@app/common';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Request } from 'express';
 
 @ApiTags('Auth')

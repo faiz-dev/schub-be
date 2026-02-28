@@ -7,17 +7,21 @@ import {
   Body,
   Param,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AcademicYearService } from './academic-year.service';
-import { CreateAcademicYearDto, UpdateAcademicYearDto } from '@app/common';
+import { CreateAcademicYearDto, UpdateAcademicYearDto, JwtAuthGuard, RolesGuard, Roles, UserRole } from '@app/common';
 
 @ApiTags('Academic Years')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('academic-years')
 export class AcademicYearController {
   constructor(private readonly academicYearService: AcademicYearService) { }
 
   @Post()
+  @Roles(UserRole.OPERATOR)
   async create(@Body() dto: CreateAcademicYearDto) {
     return this.academicYearService.create(dto);
   }
@@ -38,6 +42,7 @@ export class AcademicYearController {
   }
 
   @Put(':id')
+  @Roles(UserRole.OPERATOR)
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateAcademicYearDto,
@@ -46,6 +51,7 @@ export class AcademicYearController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.OPERATOR)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.academicYearService.remove(id);
   }

@@ -13,10 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole, Profile, CreateUserDto, PageOptionsDto } from '@app/common';
+import { JwtAuthGuard, RolesGuard, Roles, UserRole, Profile, CreateUserDto, PageOptionsDto } from '@app/common';
 import { Request } from 'express';
 
 @ApiTags('Users')

@@ -70,6 +70,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DATABASE_SYNC: ${DATABASE_SYNC:-true}
       ACADEMIC_SERVICE_PORT: "3002"
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
       RUN_SEEDER: "true"
     ports:
       - "3002:3002"

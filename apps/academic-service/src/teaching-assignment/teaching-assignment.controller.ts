@@ -1,14 +1,17 @@
-import { Controller, Get, Post, Delete, Body, Param, Query, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Delete, Body, Param, Query, ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { TeachingAssignmentService } from './teaching-assignment.service';
-import { CreateTeachingAssignmentDto } from '@app/common';
+import { CreateTeachingAssignmentDto, JwtAuthGuard, RolesGuard, Roles, UserRole } from '@app/common';
 
 @ApiTags('Teaching Assignments')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('teaching-assignments')
 export class TeachingAssignmentController {
   constructor(private readonly assignmentService: TeachingAssignmentService) { }
 
   @Post()
+  @Roles(UserRole.OPERATOR)
   async create(@Body() dto: CreateTeachingAssignmentDto) {
     return this.assignmentService.create(dto);
   }
@@ -27,6 +30,7 @@ export class TeachingAssignmentController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.OPERATOR)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.assignmentService.remove(id);
   }

@@ -8,17 +8,21 @@ import {
   Param,
   Query,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { EnrollmentService } from './enrollment.service';
-import { CreateEnrollmentDto, UpdateEnrollmentStatusDto, BulkPromoteDto } from '@app/common';
+import { CreateEnrollmentDto, UpdateEnrollmentStatusDto, BulkPromoteDto, JwtAuthGuard, RolesGuard, Roles, UserRole } from '@app/common';
 
 @ApiTags('Enrollments')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('enrollments')
 export class EnrollmentController {
   constructor(private readonly enrollmentService: EnrollmentService) { }
 
   @Post()
+  @Roles(UserRole.OPERATOR)
   async create(@Body() dto: CreateEnrollmentDto) {
     return this.enrollmentService.create(dto);
   }
@@ -42,6 +46,7 @@ export class EnrollmentController {
   }
 
   @Patch(':id/status')
+  @Roles(UserRole.OPERATOR)
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateEnrollmentStatusDto,
@@ -50,11 +55,13 @@ export class EnrollmentController {
   }
 
   @Post('promote')
+  @Roles(UserRole.OPERATOR)
   async bulkPromote(@Body() dto: BulkPromoteDto) {
     return this.enrollmentService.bulkPromote(dto);
   }
 
   @Delete(':id')
+  @Roles(UserRole.OPERATOR)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.enrollmentService.remove(id);
   }
